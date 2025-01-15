@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Music Code</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Montserrat', sans-serif;
+                background: #333333;
+                color: #ffffff;
+                scroll-behavior: smooth;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+                font-weight: bold;
+                position: absolute;
+                top: 5%;
+                left: 5%;
+            }
+
+            .main-header {
+                margin-top: 100px;
+            }
+
+            .main-header h2 {
+                font-size: 3rem;
+                font-weight: 700;
+                position: absolute;
+                top: 15%;
+                left: 5%;
+            }
+
+            /* Top Bar (Menu + Profile) */
+            .top-bar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                padding: 10px 20px;
+                background: #333333;
+                z-index: 100;
+            }
+
+            .menu-icon {
+                font-size: 3.5rem;
+                cursor: pointer;
+            }
+
+            .profile-picture {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: url('https://via.placeholder.com/40') no-repeat center center/cover;
+                border: 2px solid #ffffff;
+                cursor: pointer;
+            }
+
+            /* Month Selector Bar */
+            .month-selector {
+                position: absolute;
+                left: 5%;
+                top: 25%;
+                display: flex;
+                align-items: center;
+                justify-content: start;
+                overflow-x: auto;
+                gap: 20px;
+                padding: 20px 0;
+                white-space: nowrap;
+                scroll-behavior: smooth;
+                border-bottom: 1px solid #333333;
+            }
+
+            .month-selector::-webkit-scrollbar {
+                display: none;
+            }
+
+            .month {
+                font-size: 1rem;
+                color: #888888;
+                cursor: pointer;
+                padding: 5px 15px;
+                border-radius: 20px;
+                transition: all 0.3s ease;
+            }
+
+            .month:hover {
+                color: #ffffff;
+            }
+
+            .month.active {
+                background: #ffffff;
+                color: #000000;
+                font-weight: bold;
+            }
+
+            /* Content Section */
+            .content-section {
+                padding: 50px;
+                margin-top: 250px;
+            }
+
+            .content-header {
+                font-size: 1.5rem;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .lists {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin: 0 auto;
+                max-width: 800px;
+            }
+
+            .list-item {
+                background: #1c1c1c;
+                border-radius: 10px;
+                padding: 15px;
+                color: #ffffff;
+                text-align: left;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            }
+
+            .list-item h3 {
+                font-size: 1.2rem;
+                margin-bottom: 10px;
+                font-weight: 700;
+            }
+
+            .list-item ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .list-item ul li {
+                margin: 10px 0;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                color: #bbbbbb;
+            }
+
+            .list-item ul li input[type="checkbox"] {
+                margin-right: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="menu-icon">≡</div>
+            <div class="profile-picture"></div>
+        </div>
+
+        <!-- Logo -->
+        <h1>Playcode</h1>
+
+        <!-- Main Header -->
+        <div class="main-header">
+            <h2>MY MUSIC CODE</h2>
+        </div>
+
+        <!-- Month Selector Bar -->
+        <div class="month-selector" id="monthSelector">
+            <span class="month active" data-month="January">Jan</span>
+            <span class="month" data-month="February">Feb</span>
+            <span class="month" data-month="March">Mar</span>
+            <span class="month" data-month="April">Apr</span>
+            <span class="month" data-month="May">May</span>
+            <span class="month" data-month="June">Jun</span>
+            <span class="month" data-month="July">Jul</span>
+            <span class="month" data-month="August">Aug</span>
+            <span class="month" data-month="September">Sep</span>
+            <span class="month" data-month="October">Oct</span>
+            <span class="month" data-month="November">Nov</span>
+            <span class="month" data-month="December">Dec</span>
+        </div>
+
+        <!-- Content Section -->
+        <section class="content-section">
+            <div class="content-header" id="month-title">Music Data for January</div>
+            <div class="lists" id="month-data">
+                <!-- Data will be dynamically injected here -->
+            </div>
+        </section>
+
+        <script>
+            // Music data for each month
+            const musicData = {
+                January: {
+                    songs: ["Song 1", "Song 2", "Song 3"],
+                    albums: ["Album 1", "Album 2", "Album 3"],
+                    artists: ["Artist 1", "Artist 2", "Artist 3"],
+                },
+                February: {
+                    songs: ["Song A", "Song B", "Song C"],
+                    albums: ["Album X", "Album Y", "Album Z"],
+                    artists: ["Artist Alpha", "Artist Beta", "Artist Gamma"],
+                },
+                March: {
+                    songs: ["Song M", "Song N", "Song O"],
+                    albums: ["Album M", "Album N", "Album O"],
+                    artists: ["Artist M", "Artist N", "Artist O"],
+                },
+            };
+
+            // JavaScript for Month Selector
+            const monthSelector = document.getElementById('monthSelector');
+            const months = document.querySelectorAll('.month');
+            const monthTitle = document.getElementById('month-title');
+            const monthData = document.getElementById('month-data');
+
+            months.forEach(month => {
+                month.addEventListener('click', () => {
+                    // Remove active class from all months
+                    months.forEach(m => m.classList.remove('active'));
+                    // Add active class to the selected month
+                    month.classList.add('active');
+
+                    // Update content for the selected month
+                    const selectedMonth = month.getAttribute('data-month');
+                    monthTitle.textContent = `Music Data for ${selectedMonth}`;
+                    const data = musicData[selectedMonth] || { songs: [], albums: [], artists: [] };
+
+                    // Clear existing data
+                    monthData.innerHTML = '';
+
+                    // Populate "Top Songs"
+                    const topSongs = document.createElement('div');
+                    topSongs.className = 'list-item';
+                    topSongs.innerHTML = `
+                        <h3>Top Songs</h3>
+                        <ul>
+                            ${data.songs.map(song => `<li><input type="checkbox"> ${song}</li>`).join('')}
+                        </ul>
+                    `;
+                    monthData.appendChild(topSongs);
+
+                    // Populate "Top Albums"
+                    const topAlbums = document.createElement('div');
+                    topAlbums.className = 'list-item';
+                    topAlbums.innerHTML = `
+                        <h3>Top Albums</h3>
+                        <ul>
+                            ${data.albums.map(album => `<li><input type="checkbox"> ${album}</li>`).join('')}
+                        </ul>
+                    `;
+                    monthData.appendChild(topAlbums);
+
+                    // Populate "Top Artists"
+                    const topArtists = document.createElement('div');
+                    topArtists.className = 'list-item';
+                    topArtists.innerHTML = `
+                        <h3>Top Artists</h3>
+                        <ul>
+                            ${data.artists.map(artist => `<li><input type="checkbox"> ${artist}</li>`).join('')}
+                        </ul>
+                    `;
+                    monthData.appendChild(topArtists);
+                });
+            });
+        </script>
+    </body>
+</html>
