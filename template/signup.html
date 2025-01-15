@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>회원가입</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                background: #333333; /* 차콜 배경 */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                font-family: 'Montserrat', sans-serif;
+                height: 100vh;
+                margin: 0;
+            }
+
+            .container {
+                background-color: #333333; /* 차콜 */
+                border-radius: 10px;
+                box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+                            0 10px 10px rgba(0, 0, 0, 0.22);
+                display: flex;
+                overflow: hidden;
+                width: 768px;
+                max-width: 100%;
+                min-height: 480px;
+            }
+
+            .left-panel {
+                background-color: #FFFFFF; /* 흰색 배경 */
+                border-radius: 10px;
+                color: #333333; /* 차콜 텍스트 */
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .right-panel {
+                background-color: #692d2d; /* 버건디 배경 */
+                border-radius: 10px;
+                color: #FFFFFF; /* 흰색 텍스트 */
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+
+            h1 {
+                font-weight: bold;
+                margin: 0;
+            }
+
+            p {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+
+            form {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 80%;
+            }
+
+            input {
+                background-color: #eee;
+                border: none;
+                border-radius: 5px;
+                margin: 10px 0;
+                padding: 12px 15px;
+                width: 100%;
+            }
+
+            button {
+                border-radius: 20px;
+                border: 1px solid #FFFFFF; /* 흰색 테두리 */
+                background-color: #692d2d; /* 어두운 버건디 */
+                color: #FFFFFF;
+                font-size: 12px;
+                font-weight: bold;
+                padding: 12px 45px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                transition: transform 80ms ease-in;
+            }
+
+            button:active {
+                transform: scale(0.95);
+            }
+
+            button:focus {
+                outline: none;
+            }
+
+            button:hover {
+                transform: scale(1.05);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- 왼쪽 패널 -->
+            <div class="left-panel">
+                <h1>Welcome Back!</h1>
+                <p>To keep connected with us please login with your personal info</p>
+                <button id="signIn" onclick="location.href='signin.html'">Sign In</button>
+            </div>
+
+            <!-- 오른쪽 패널 -->
+            <div class="right-panel">
+                <h1>Create Account</h1>
+                <form action="#">
+                    <input type="text" placeholder="Name" required />
+                    <input type="email" placeholder="Email" required />
+                    <input type="password" placeholder="Password" required />
+                    <button type="submit">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>
