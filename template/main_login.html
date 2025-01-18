@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playcode Main</title>
+
+  <!-- Font Awesome 아이콘(CDN) -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    integrity="sha512-..." 
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0; 
+      padding: 0;
+    }
+    body {
+      font-family: sans-serif;
+      background-color: #121212;
+      color: #fff;
+      overflow-x: hidden; /* 사이드바 등장시 화면 흔들림 방지 */
+    }
+
+    /*****************************************
+       (1) 상단 헤더
+     *****************************************/
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #222;
+      color: #fff;
+      padding: 0 20px;
+      z-index: 999;
+    }
+    .header .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .header .icons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .icon-btn {
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /*****************************************
+       (2) 오른쪽 사이드바 (메뉴)
+     *****************************************/
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease;
+      z-index: 1000;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.active {
+      right: 0;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sidebar-header i {
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .sidebar-menu a {
+      display: block;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    .sidebar-menu a:hover {
+      color: #999;
+    }
+
+    /*****************************************
+       (3) 오른쪽 사이드바 (프로필)
+     *****************************************/
+    .profile-sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease;
+      z-index: 1001;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .profile-sidebar.active {
+      right: 0;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .profile-header i {
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .profile-content {
+      flex: 1;
+    }
+
+    /*****************************************
+       (4) 메인 컨테이너
+     *****************************************/
+    .main-container {
+      margin-top: 60px; /* 헤더 높이만큼 띄움 */
+      padding: 20px;
+      min-height: 150vh;
+    }
+
+    /*****************************************
+       (4-1) 추천 음악 섹션
+     *****************************************/
+    .recommend-section {
+      margin-bottom: 40px;
+    }
+    .recommend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .recommend-header h2 {
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    .recommend-header a {
+      color: #bbb;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .recommend-header a:hover {
+      color: #fff;
+    }
+    /* 가로 스크롤 컨테이너 */
+    .recommend-cards {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+      scrollbar-width: none; /* Firefox 숨김 */
+      -ms-overflow-style: none; /* IE, Edge */
+    }
+    .recommend-cards::-webkit-scrollbar {
+      display: none; /* 크롬 스크롤바 숨김 */
+    }
+    /* 개별 카드 */
+    .recommend-card {
+      width: 160px;
+      flex-shrink: 0;
+      background-color: #181818;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .recommend-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
+    .recommend-info {
+      padding: 10px;
+    }
+    .mix-label {
+      display: inline-block;
+      margin-bottom: 5px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #000;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .mix1 { background-color: #1ed760; }
+    .mix2 { background-color: #ffe000; }
+    .mix3 { background-color: #ff4d4d; }
+    .mix4 { background-color: #ff77ff; }
+    .recommend-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .recommend-artists {
+      font-size: 0.8rem;
+      color: #b3b3b3;
+      line-height: 1.2;
+    }
+
+    /*****************************************
+       (4-2) 장르별 추천 & 플레이리스트
+       → 첫 번째 스샷처럼 카드 형식
+     *****************************************/
+    .horizontal-section {
+      margin-bottom: 40px;
+    }
+    .horizontal-section .section-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .horizontal-cards {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 5px;
+    }
+    .horizontal-cards::-webkit-scrollbar {
+      display: none;
+    }
+    .horizontal-card {
+      width: 160px;
+      flex-shrink: 0;
+      background-color: #181818;
+      border-radius: 8px;
+      overflow: hidden;
+      color: #fff;
+      text-align: center;
+    }
+    .horizontal-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
+    .horizontal-card .card-info {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+
+    /*****************************************
+       (4-3) 내 차트 (두 번째 스샷처럼 표 형태)
+     *****************************************/
+    .my-chart-section {
+      margin-top: 50px;
+    }
+    .my-chart-section .section-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .chart-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #fff;
+    }
+    .chart-table thead {
+      background-color: #333;
+    }
+    .chart-table th,
+    .chart-table td {
+      padding: 12px;
+      border-bottom: 1px solid #444;
+      text-align: left;
+    }
+    .chart-table th {
+      font-weight: normal;
+      color: #aaa;
+    }
+    .chart-table td img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .song-title-td {
+      display: flex;
+      align-items: center;
+    }
+    /* 예시로 아이콘 클릭 스타일 */
+    .chart-table .icon-btn {
+      cursor: pointer;
+      margin: 0 5px;
+      color: #1ed760; /* spotify 그린 */
+    }
+
+    /*****************************************
+       (5) 재생중인 노래(고정 하단 바)
+     *****************************************/
+    .now-playing {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 9999;
+    }
+    .now-playing .song-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .song-title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .song-artist {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .player-controls i {
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- (A) 상단 헤더 -->
+  <header class="header">
+    <div class="logo">Playcode</div>
+    <div class="icons">
+      <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
+      <i class="far fa-circle icon-btn" onclick="toggleProfileSidebar()"></i>
+    </div>
+  </header>
+
+  <!-- (B) 오른쪽 메뉴 사이드바 -->
+  <div id="menuSidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Menu</span>
+      <i class="fas fa-times" onclick="toggleMenuSidebar()"></i>
+    </div>
+    <div class="sidebar-menu">
+      <a href="#"><i class="fas fa-chart-line"></i> 내 차트</a>
+      <a href="#"><i class="fas fa-music"></i> 추천 음악</a>
+      <a href="#"><i class="fas fa-list-ul"></i> 플레이리스트</a>
+      <a href="#"><i class="fas fa-heart"></i> 마이 픽</a>
+      <a href="#"><i class="fas fa-user"></i> 마이 아티스트</a>
+    </div>
+  </div>
+
+  <!-- (C) 오른쪽 프로필 사이드바 -->
+  <div id="profileSidebar" class="profile-sidebar">
+    <div class="profile-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Profile</span>
+      <i class="fas fa-times" onclick="toggleProfileSidebar()"></i>
+    </div>
+    <div class="profile-content">
+      <p>사용자명: John Doe</p>
+      <p>이메일: john@example.com</p>
+      <button style="margin-top:20px;">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- (D) 메인 영역 -->
+  <div class="main-container">
+    <!-- (D1) 추천 음악 섹션 -->
+    <section class="recommend-section">
+      <div class="recommend-header">
+        <h2>주성 님을 위한 믹스 & 추천</h2>
+        <a href="#">모두 표시</a>
+      </div>
+      <div class="recommend-cards">
+        <!-- 카드 예시 - 실제로는 Spotify API 결과를 반복 렌더링 -->
+        <div class="recommend-card">
+          <img src="https://via.placeholder.com/300x300?text=MIX+1" alt="데일리 믹스 1" />
+          <div class="recommend-info">
+            <span class="mix-label mix1">데일리 믹스 1</span>
+            <div class="recommend-title">Tyler, The Creator, Kendrick Lamar...</div>
+            <div class="recommend-artists">등</div>
+          </div>
+        </div>
+
+        <div class="recommend-card">
+          <img src="https://via.placeholder.com/300x300?text=MIX+2" alt="데일리 믹스 2" />
+          <div class="recommend-info">
+            <span class="mix-label mix2">데일리 믹스 2</span>
+            <div class="recommend-title">Maroon 5, Taylor Swift, Bruno Mars 등</div>
+            <div class="recommend-artists"></div>
+          </div>
+        </div>
+        
+        <div class="recommend-card">
+          <img src="https://via.placeholder.com/300x300?text=MIX+3" alt="데일리 믹스 3" />
+          <div class="recommend-info">
+            <span class="mix-label mix3">데일리 믹스 3</span>
+            <div class="recommend-title">The Weeknd, Daniel Caesar...</div>
+            <div class="recommend-artists"></div>
+          </div>
+        </div>
+        <!-- ...필요 카드만큼 반복 -->
+      </div>
+    </section>
+
+    <!-- (D2) 장르별 추천 음악 섹션 (가로 스크롤 카드) -->
+    <div class="horizontal-section">
+      <div class="section-title">장르별 추천 음악</div>
+      <div class="horizontal-cards">
+        <!-- 실제 Spotify API 장르 별 플레이리스트/트랙 이미지 사용 -->
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=HIPHOP" alt="힙합" />
+          <div class="card-info">랩/힙합</div>
+        </div>
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=R%26B" alt="R&B" />
+          <div class="card-info">R&B</div>
+        </div>
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=Ballad" alt="발라드" />
+          <div class="card-info">발라드</div>
+        </div>
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=Dance" alt="댄스" />
+          <div class="card-info">댄스</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- (D3) 플레이리스트 섹션 (가로 스크롤 카드) -->
+    <div class="horizontal-section">
+      <div class="section-title">플레이리스트</div>
+      <div class="horizontal-cards">
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=Playlist+1" alt="플레이리스트 1"/>
+          <div class="card-info">플레이리스트 1</div>
+        </div>
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=Playlist+2" alt="플레이리스트 2"/>
+          <div class="card-info">플레이리스트 2</div>
+        </div>
+        <div class="horizontal-card">
+          <img src="https://via.placeholder.com/300x300?text=Playlist+3" alt="플레이리스트 3"/>
+          <div class="card-info">플레이리스트 3</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- (D4) 내 차트 (표 형태로 50위까지) -->
+    <div class="my-chart-section">
+      <div class="section-title">내 차트</div>
+      <table class="chart-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;">순위</th>
+            <th>곡 정보</th>
+            <th>앨범</th>
+            <th>좋아요</th>
+            <th>듣기</th>
+            <th>담기</th>
+            <th>다운</th>
+            <th>뮤비</th>
+          </tr>
+        </thead>
+        <tbody id="myChartTbody">
+          <!-- 예: 최대 50개 행. 실제로는 Spotify API 응답을 바탕으로 반복 렌더링 -->
+          <tr>
+            <td>1</td>
+            <td>
+              <div class="song-title-td">
+                <img src="https://via.placeholder.com/40x40?text=Cover" alt="Cover" />
+                <div>
+                  HOME SWEET HOME (feat. 태...)
+                  <br />
+                  <span style="font-size:0.85rem; color:#bbb;">G-DRAGON</span>
+                </div>
+              </div>
+            </td>
+            <td>HOME SWEET HOME (feat. ...)</td>
+            <td>162,281</td>
+            <td><i class="fas fa-play icon-btn"></i></td>
+            <td><i class="fas fa-plus icon-btn"></i></td>
+            <td><i class="fas fa-download icon-btn"></i></td>
+            <td><i class="fas fa-video icon-btn"></i></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>
+              <div class="song-title-td">
+                <img src="https://via.placeholder.com/40x40?text=Cover" alt="Cover" />
+                <div>
+                  APT.
+                  <br />
+                  <span style="font-size:0.85rem; color:#bbb;">로제 (ROSÉ), Bruno Mars</span>
+                </div>
+              </div>
+            </td>
+            <td>APT.</td>
+            <td>199,841</td>
+            <td><i class="fas fa-play icon-btn"></i></td>
+            <td><i class="fas fa-plus icon-btn"></i></td>
+            <td><i class="fas fa-download icon-btn"></i></td>
+            <td><i class="fas fa-video icon-btn"></i></td>
+          </tr>
+          <!-- ... 3,4,... 50 등 필요만큼 반복 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- (E) 재생중인 노래 하단바 -->
+  <div class="now-playing">
+    <div class="song-info">
+      <span class="song-title">Now Playing: 노래 제목</span>
+      <span class="song-artist">아티스트 이름</span>
+    </div>
+    <div class="player-controls">
+      <i class="fas fa-backward"></i>
+      <i class="fas fa-play-circle"></i>
+      <i class="fas fa-forward"></i>
+    </div>
+  </div>
+
+  <script>
+    // 메뉴 사이드바 열기/닫기
+    function toggleMenuSidebar() {
+      const sidebar = document.getElementById('menuSidebar');
+      sidebar.classList.toggle('active');
+    }
+    // 프로필 사이드바 열기/닫기
+    function toggleProfileSidebar() {
+      const profileSidebar = document.getElementById('profileSidebar');
+      profileSidebar.classList.toggle('active');
+    }
+
+    // 예시) Spotify API로 받은 데이터를 차트 테이블에 넣는 함수 (가짜 코드)
+    // 실제로는 백엔드에서 OAuth 처리 후, fetch('/api/my-chart') 등으로 가져온 뒤 렌더링
+    /*
+    async function loadChartData() {
+      const res = await fetch('/api/my-chart'); // 백엔드 라우트 예시
+      const data = await res.json(); // { tracks: [...], ... }
+      
+      const tbody = document.getElementById('myChartTbody');
+      tbody.innerHTML = '';
+      data.tracks.slice(0, 50).forEach((track, idx) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${idx+1}</td>
+          <td>
+            <div class="song-title-td">
+              <img src="${track.albumImage}" alt="Cover" />
+              <div>
+                ${track.title}
+                <br />
+                <span style="font-size:0.85rem; color:#bbb;">${track.artist}</span>
+              </div>
+            </div>
+          </td>
+          <td>${track.album}</td>
+          <td>${track.likes}</td>
+          <td><i class="fas fa-play icon-btn"></i></td>
+          <td><i class="fas fa-plus icon-btn"></i></td>
+          <td><i class="fas fa-download icon-btn"></i></td>
+          <td><i class="fas fa-video icon-btn"></i></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    // window.onload = loadChartData;
+    */
+  </script>
+</body>
+</html>
