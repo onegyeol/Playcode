@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playcode - 내 차트</title>
+
+  <!-- Font Awesome 아이콘(CDN) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    integrity="sha512-..."
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: sans-serif;
+      background-color: #121212;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /*****************************************
+       (1) 상단 헤더
+     *****************************************/
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #222;
+      color: #fff;
+      padding: 0 20px;
+      z-index: 999;
+    }
+    .header .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    /* 로고를 링크로 만들어서 클릭 시 메인(index.html)으로 이동 */
+    .header .logo a {
+      text-decoration: none;
+      color: inherit; /* 부모 color(#fff) 그대로 */
+    }
+
+    .header .icons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .icon-btn {
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* (추가) 국내 / 해외 카테고리 스위치 */
+    .region-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .region-switch span {
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background-color: #333;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      transition: background-color 0.3s, opacity 0.3s;
+    }
+    .region-switch span:hover {
+      opacity: 1;
+    }
+    .region-switch span.active {
+      background-color: #555;
+      opacity: 1;
+    }
+
+    /*****************************************
+       (2) 오른쪽 사이드바 (메뉴)
+     *****************************************/
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease;
+      z-index: 1000;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.active {
+      right: 0;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sidebar-header i {
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .sidebar-menu a {
+      display: block;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    .sidebar-menu a:hover {
+      color: #999;
+    }
+
+    /*****************************************
+       (3) 오른쪽 사이드바 (프로필)
+     *****************************************/
+    .profile-sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease;
+      z-index: 1001;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .profile-sidebar.active {
+      right: 0;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .profile-header i {
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .profile-content {
+      flex: 1;
+    }
+
+    /*****************************************
+       (4) 메인 컨테이너 (차트 화면)
+     *****************************************/
+    .main-container {
+      margin-top: 60px; /* 헤더 높이만큼 띄움 */
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    /* (4-1) 카테고리 탭 */
+    .category-tabs {
+      display: flex;
+      gap: 20px;
+      border-bottom: 1px solid #333;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+    }
+    .category-tabs li {
+      list-style: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: color 0.3s, opacity 0.3s;
+    }
+    .category-tabs li:hover,
+    .category-tabs li.active {
+      opacity: 1;
+      color: #fff;
+    }
+
+    /* (4-2) 차트 헤더 (선택확장 메뉴 등) */
+    .chart-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .select-actions {
+      position: relative;
+      cursor: pointer;
+    }
+    .select-menu {
+      position: absolute;
+      top: 25px; /* 아이콘 아래로 */
+      right: 0;
+      width: 140px;
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 5px;
+      display: none;
+      flex-direction: column;
+      padding: 5px 0;
+      z-index: 100;
+    }
+    .select-menu.active {
+      display: flex;
+    }
+    .select-menu a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 8px 10px;
+      transition: background-color 0.2s;
+    }
+    .select-menu a:hover {
+      background-color: #333;
+    }
+
+    /* (4-3) 차트 리스트 */
+    .chart-list {
+      width: 100%;
+      border-radius: 5px;
+      background-color: #181818;
+      overflow: hidden;
+    }
+    .chart-list-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #333;
+    }
+    .chart-list-item:last-child {
+      border-bottom: none;
+    }
+    .chart-rank,
+    .chart-select {
+      width: 40px;
+      text-align: center;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    .chart-select input[type="checkbox"] {
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+    .chart-cover {
+      width: 45px;
+      height: 45px;
+      margin-right: 15px;
+    }
+    .chart-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .chart-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .chart-info .title {
+      font-size: 0.95rem;
+      margin-bottom: 3px;
+    }
+    .chart-info .artist {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    .chart-play {
+      margin-left: 10px;
+      cursor: pointer;
+      color: #1ed760; /* spotify 그린 */
+    }
+    .chart-more {
+      margin-left: 10px;
+      cursor: pointer;
+      color: #aaa;
+      position: relative;
+    }
+    .more-menu {
+      position: absolute;
+      top: 25px;
+      right: 0;
+      width: 120px;
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 5px;
+      display: none;
+      flex-direction: column;
+      padding: 5px 0;
+      z-index: 100;
+    }
+    .more-menu.active {
+      display: flex;
+    }
+    .more-menu a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      transition: background-color 0.2s;
+    }
+    .more-menu a:hover {
+      background-color: #333;
+    }
+    .chart-list-item:hover {
+      background-color: #202020;
+    }
+
+    /*****************************************
+       (5) 재생중인 노래(고정 하단 바)
+     *****************************************/
+    .now-playing {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 9999;
+    }
+    .now-playing .song-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .song-title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .song-artist {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .player-controls i {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- (A) 상단 헤더 -->
+  <header class="header">
+    <!-- 로고: 클릭 시 메인 페이지(index.html)로 이동 -->
+    <div class="logo">
+      <a href="main_login.html">Playcode</a>
+    </div>
+
+    <div class="icons">
+      <!-- (추가) 국내 / 해외 카테고리 -->
+      <div class="region-switch" id="regionSwitch">
+        <span class="active" onclick="setRegion('domestic')">국내</span>
+        <span onclick="setRegion('international')">해외</span>
+      </div>
+
+      <!-- 햄버거 아이콘 (오른쪽 사이드바 - 메뉴) -->
+      <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
+      <!-- 프로필 아이콘 (오른쪽 사이드바 - 프로필) -->
+      <i class="far fa-circle icon-btn" onclick="toggleProfileSidebar()"></i>
+    </div>
+  </header>
+
+  <!-- (B) 오른쪽 메뉴 사이드바 -->
+  <div id="menuSidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Menu</span>
+      <i class="fas fa-times" onclick="toggleMenuSidebar()"></i>
+    </div>
+    <div class="sidebar-menu">
+      <a href="#"><i class="fas fa-chart-line"></i> 내 차트</a>
+      <a href="#"><i class="fas fa-music"></i> 추천 음악</a>
+      <a href="#"><i class="fas fa-list-ul"></i> 플레이리스트</a>
+      <a href="#"><i class="fas fa-heart"></i> 마이 픽</a>
+      <a href="#"><i class="fas fa-user"></i> 마이 아티스트</a>
+    </div>
+  </div>
+
+  <!-- (C) 오른쪽 프로필 사이드바 -->
+  <div id="profileSidebar" class="profile-sidebar">
+    <div class="profile-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Profile</span>
+      <i class="fas fa-times" onclick="toggleProfileSidebar()"></i>
+    </div>
+    <div class="profile-content">
+      <!-- 프로필 정보 예시 -->
+      <p>사용자명: John Doe</p>
+      <p>이메일: john@example.com</p>
+      <button style="margin-top:20px;">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- (D) 메인 영역 (차트 화면) -->
+  <div class="main-container">
+    <!-- 카테고리 탭 (장르 등) -->
+    <ul class="category-tabs" id="genreTabs">
+      <li class="active">전체</li>
+      <li>발라드</li>
+      <li>랩/힙합</li>
+      <li>인디</li>
+      <li>밴드</li>
+      <li>알앤비</li>
+      <li>댄스</li>
+      <li>재즈</li>
+      <!-- 원하는 만큼 추가 -->
+    </ul>
+
+    <!-- 차트 헤더 (예: 선택, 삭제 등) -->
+    <div class="chart-header">
+      <div class="select-actions" id="selectActionBtn">
+        <i class="fas fa-ellipsis-v" style="cursor:pointer;"></i>
+        <div class="select-menu" id="selectMenu">
+          <a href="#">전체 선택</a>
+          <a href="#">선택 해제</a>
+          <a href="#">선택 항목 삭제</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 차트 리스트 -->
+    <div class="chart-list" id="chartList">
+      <!-- 예시 아이템 1 -->
+      <div class="chart-list-item">
+        <div class="chart-rank">1</div>
+        <div class="chart-select">
+          <input type="checkbox" />
+        </div>
+        <div class="chart-cover">
+          <img src="https://via.placeholder.com/45x45?text=Cover" alt="cover" />
+        </div>
+        <div class="chart-info">
+          <span class="title">HOME SWEET HOME (feat. 태양)</span>
+          <span class="artist">G-DRAGON</span>
+        </div>
+        <i class="fas fa-play chart-play"></i>
+        <div class="chart-more">
+          <i class="fas fa-ellipsis-v"></i>
+          <div class="more-menu">
+            <a href="#">담기</a>
+            <a href="#">앨범 보기</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 예시 아이템 2 -->
+      <div class="chart-list-item">
+        <div class="chart-rank">2</div>
+        <div class="chart-select">
+          <input type="checkbox" />
+        </div>
+        <div class="chart-cover">
+          <img src="https://via.placeholder.com/45x45?text=Cover" alt="cover" />
+        </div>
+        <div class="chart-info">
+          <span class="title">Whiplash</span>
+          <span class="artist">aespa</span>
+        </div>
+        <i class="fas fa-play chart-play"></i>
+        <div class="chart-more">
+          <i class="fas fa-ellipsis-v"></i>
+          <div class="more-menu">
+            <a href="#">담기</a>
+            <a href="#">앨범 보기</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ... 필요한만큼 최대 50개 반복 -->
+    </div>
+  </div>
+
+  <!-- (E) 재생중인 노래 하단바 -->
+  <div class="now-playing">
+    <div class="song-info">
+      <span class="song-title">Now Playing: 노래 제목</span>
+      <span class="song-artist">아티스트 이름</span>
+    </div>
+    <div class="player-controls">
+      <i class="fas fa-backward"></i>
+      <i class="fas fa-play-circle"></i>
+      <i class="fas fa-forward"></i>
+    </div>
+  </div>
+
+  <script>
+    // 사이드바 제어
+    function toggleMenuSidebar() {
+      const sidebar = document.getElementById('menuSidebar');
+      sidebar.classList.toggle('active');
+    }
+    function toggleProfileSidebar() {
+      const profileSidebar = document.getElementById('profileSidebar');
+      profileSidebar.classList.toggle('active');
+    }
+
+    // 국내 / 해외 카테고리 전환
+    function setRegion(region) {
+      const regionSwitch = document.getElementById('regionSwitch').children;
+      for (let span of regionSwitch) {
+        span.classList.remove('active');
+      }
+      if (region === 'domestic') {
+        regionSwitch[0].classList.add('active'); // '국내'
+      } else {
+        regionSwitch[1].classList.add('active'); // '해외'
+      }
+      // 실제로는 region에 따라 차트 데이터 바꿔 보여주기
+      console.log(`현재 카테고리: ${region}`);
+    }
+
+    // 장르 탭 클릭 이벤트
+    const genreTabs = document.getElementById('genreTabs').children;
+    for (let tab of genreTabs) {
+      tab.addEventListener('click', () => {
+        for (let t of genreTabs) t.classList.remove('active');
+        tab.classList.add('active');
+        // 탭별로 차트 데이터 필터링 or API 호출
+      });
+    }
+
+    // (선택 확장 메뉴) ... 버튼 클릭 시
+    const selectActionBtn = document.getElementById('selectActionBtn');
+    const selectMenu = document.getElementById('selectMenu');
+    selectActionBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectMenu.classList.toggle('active');
+    });
+    // 바깥 클릭하면 닫기
+    document.body.addEventListener('click', () => {
+      if (selectMenu.classList.contains('active')) {
+        selectMenu.classList.remove('active');
+      }
+    }, true);
+
+    // 곡 리스트 내의 더보기(세로점) 메뉴
+    const chartList = document.getElementById('chartList');
+    chartList.addEventListener('click', (event) => {
+      if (event.target.classList.contains('fa-ellipsis-v')) {
+        const moreDiv = event.target.closest('.chart-more');
+        if (!moreDiv) return;
+        const moreMenu = moreDiv.querySelector('.more-menu');
+        // 이미 열려 있는 다른 more-menu 닫기
+        document.querySelectorAll('.more-menu.active').forEach(m => {
+          if (m !== moreMenu) m.classList.remove('active');
+        });
+        // 현재 메뉴 열고/닫기
+        moreMenu.classList.toggle('active');
+        event.stopPropagation();
+      }
+    });
+    document.body.addEventListener('click', () => {
+      document.querySelectorAll('.more-menu.active').forEach(m => m.classList.remove('active'));
+    }, true);
+  </script>
+</body>
+</html>
