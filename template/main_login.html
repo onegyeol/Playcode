@@ -58,6 +58,45 @@
       font-size: 1.2rem;
     }
 
+    /* 로고 클릭 시 메인화면으로 */
+    .header .logo a {
+      text-decoration: none;
+      color: inherit; 
+    }
+
+    .header .icons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .icon-btn {
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* (추가) 국내 / 해외 카테고리 스위치 */
+    .region-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .region-switch span {
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background-color: #333;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      transition: background-color 0.3s, opacity 0.3s;
+    }
+    .region-switch span:hover {
+      opacity: 1;
+    }
+    .region-switch span.active {
+      background-color: #555;
+      opacity: 1;
+    }
+
       /* 가운데 검색 영역 (폼) */
     .search-container {
       position: absolute;
@@ -422,7 +461,10 @@
 <body>
   <!-- 상단 헤더 Playcode 로고 -->
   <header class="header">
-    <div class="logo">Playcode</div>
+    <!-- 로고: 클릭 시 메인 페이지로 이동 -->
+    <div class="logo">
+      <a href="main_login.html">Playcode</a>
+    </div>
         <!-- 가운데 검색 영역: form으로 감싸서 엔터 또는 아이콘 클릭 시 search_result.html로 이동 -->
     <div class="search-container">
       <form class="search-form" action="search_result.html" method="get" id="searchForm">
@@ -448,7 +490,14 @@
         <i class="fas fa-music"></i>
       </div>
     </div>
+    
     <div class="icons">
+      <!-- (추가) 국내 / 해외 카테고리 -->
+      <div class="region-switch" id="regionSwitch">
+        <span class="active" onclick="setRegion('domestic')">국내</span>
+        <span onclick="setRegion('international')">해외</span>
+      </div>
+
       <!-- 햄버거 아이콘 (오른쪽 사이드바 - 메뉴) -->
       <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
       <!-- 프로필 아이콘 -->
@@ -683,6 +732,21 @@
       alert("주변 음악을 마이크로 감지합니다... (예시)");
       // 실제 음성인식/주변 소리 분석 로직 추가 가능
     }
+
+   // 국내/해외 카테고리 전환
+   function setRegion(region) {
+      const regionSwitch = document.getElementById('regionSwitch').children;
+      for (let span of regionSwitch) {
+        span.classList.remove('active');
+      }
+      if (region === 'domestic') {
+        regionSwitch[0].classList.add('active');
+      } else {
+        regionSwitch[1].classList.add('active');
+      }
+      console.log(`현재 카테고리: ${region}`);
+    }
+    
   </script>
 </body>
 </html>
