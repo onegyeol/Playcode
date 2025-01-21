@@ -58,6 +58,74 @@
       font-size: 1.2rem;
     }
 
+      /* 가운데 검색 영역 (폼) */
+    .search-container {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    /* form 기본 스타일 제거 */
+    .search-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ccc;
+      font-size: 1rem;
+      width: 400px; 
+      border-bottom: 1px solid #555; 
+      padding: 5px 0;
+      transition: border-color 0.3s;
+    }
+    .search-input::placeholder {
+      color: #555;
+    }
+    .search-input:focus {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .search-icon {
+      font-size: 1rem;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .search-icon:hover {
+      color: #fff;
+    }
+
+    /* 주변 음악 검색 아이콘 */
+    .music-detect-icon {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      border: 2px dashed #ccc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .music-detect-icon:hover {
+      border-color: #fff;
+    }
+    .music-detect-icon i {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+    .music-detect-icon:hover i {
+      color: #fff;
+    }
+    
     /*****************************************
        (2) 오른쪽 사이드바(메뉴)
      *****************************************/
@@ -352,9 +420,34 @@
   </style>
 </head>
 <body>
-  <!-- 상단 헤더 -->
+  <!-- 상단 헤더 Playcode 로고 -->
   <header class="header">
     <div class="logo">Playcode</div>
+        <!-- 가운데 검색 영역: form으로 감싸서 엔터 또는 아이콘 클릭 시 search_result.html로 이동 -->
+    <div class="search-container">
+      <form class="search-form" action="search_result.html" method="get" id="searchForm">
+        <!-- name="search"으로 search_result.html에서 파라미터로 받음 -->
+        <input 
+          type="text" 
+          name="search"
+          placeholder="검색어를 입력하세요" 
+          class="search-input"
+        />
+        <!-- 돋보기 아이콘 (클릭 시 폼 전송) -->
+        <i 
+          class="fas fa-search search-icon" 
+          onclick="document.getElementById('searchForm').submit()"
+        ></i>
+      </form>
+      <!-- 주변 음악 검색 아이콘 -->
+      <div 
+        class="music-detect-icon" 
+        title="주변 음악 검색"
+        onclick="startMusicDetection()"
+      >
+        <i class="fas fa-music"></i>
+      </div>
+    </div>
     <div class="icons">
       <!-- 햄버거 아이콘 (오른쪽 사이드바 - 메뉴) -->
       <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
@@ -583,6 +676,12 @@
     function toggleProfileSidebar() {
       const profileSidebar = document.getElementById('profileSidebar');
       profileSidebar.classList.toggle('active');
+    }
+
+   // (3) 주변 음악 검색
+   function startMusicDetection() {
+      alert("주변 음악을 마이크로 감지합니다... (예시)");
+      // 실제 음성인식/주변 소리 분석 로직 추가 가능
     }
   </script>
 </body>
