@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playing...</title>
+
+  <!-- Font Awesome 아이콘(CDN) 사용 예시 -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
+    integrity="sha512-...생략..." 
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0; 
+      padding: 0;
+    }
+    
+    body {
+    font-family: sans-serif;
+    background-color: #121212;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex; /* 추가 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
+    height: 100vh; /* 화면 전체 높이 */
+    overflow-x: hidden; /* 사이드바 등장시 흔들림 방지 */
+  }
+    /*****************************************
+       상단 헤더 
+     *****************************************/
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #222;
+      color: #fff;
+      padding: 0 20px;
+      z-index: 999; /* 사이드바 위에 표시 */
+    }
+    .header .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .header .icons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .icon-btn {
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* 로고 클릭 시 메인화면으로 */
+    .header .logo a {
+      text-decoration: none;
+      color: inherit; 
+    }
+
+    .header .icons {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .icon-btn {
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    
+     /* 가운데 검색 영역 (폼) */
+     .search-container {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    /* form 기본 스타일 제거 */
+    .search-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ccc;
+      font-size: 1rem;
+      width: 400px; 
+      border-bottom: 1px solid #555; 
+      padding: 5px 0;
+      transition: border-color 0.3s;
+    }
+    .search-input::placeholder {
+      color: #555;
+    }
+    .search-input:focus {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .search-icon {
+      font-size: 1rem;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .search-icon:hover {
+      color: #fff;
+    }
+
+    /* 주변 음악 검색 아이콘 */
+    .music-detect-icon {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      border: 2px dashed #ccc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .music-detect-icon:hover {
+      border-color: #fff;
+    }
+    .music-detect-icon i {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+    .music-detect-icon:hover i {
+      color: #fff;
+    }
+    
+    /*****************************************
+       오른쪽 사이드바(메뉴)
+     *****************************************/
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px; /* 처음에는 화면 밖 */
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease;
+      z-index: 1000;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.active {
+      right: 0;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sidebar-header i {
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .sidebar-menu a {
+      display: block;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #fff;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    .sidebar-menu a:hover {
+      color: #555;
+    }
+
+    /*****************************************
+       오른쪽 사이드바(프로필)
+     *****************************************/
+    .profile-sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px; /* 화면 밖 */
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+      transition: 0.3s ease;
+      z-index: 1001; /* 메뉴 사이드바보다 더 위 */
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .profile-sidebar.active {
+      right: 0;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .profile-header i {
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .profile-content {
+      flex: 1;
+    }
+
+    /*****************************************
+       메인 컨테이너
+     *****************************************/
+    .main-container {
+      margin-top: 60px; /* 헤더 높이만큼 띄움 */
+      padding: 20px;
+      min-height: 150vh;
+    }
+
+    /*****************************************
+       재생 화면
+     *****************************************/
+
+    .player-container {
+      width: 100%;
+      max-width: 500px;
+      background-color: #222;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .album-art {
+      width: 100%;
+      height: 300px;
+      background: url('https://via.placeholder.com/500') no-repeat center;
+      background-size: cover;
+    }
+
+    .track-info {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .track-info h3 {
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    .track-info p {
+      color: #aaa;
+      font-size: 1rem;
+    }
+
+    .progress-bar {
+      margin: 20px;
+      position: relative;
+    }
+
+    .progress-bar input[type="range"] {
+      width: 100%;
+      background: transparent;
+      -webkit-appearance: none;
+    }
+
+    .progress-bar input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .controls i {
+      font-size: 2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .controls i:hover {
+      color: #aaa;
+    }
+
+    .extra-controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+      color: #aaa;
+      font-size: 1.2rem;
+    }
+
+    .extra-controls i {
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .extra-controls i:hover {
+      color: #fff;
+    }
+
+    /*****************************************
+       (5) 재생중인 노래(고정 하단 바)
+     *****************************************/
+    .now-playing {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 9999; 
+    }
+    .now-playing .song-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .song-title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .song-artist {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .player-controls i {
+      cursor: pointer;
+    }
+    .extra-controls {
+      display: flex;
+      justify-content: flex-end; /* 오른쪽 끝으로 정렬 */
+      padding-right: 20px; /* 오른쪽 여백 설정 */
+      color: #aaa;
+      font-size: 1.2rem;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- 상단 헤더 Playcode 로고 -->
+  <header class="header">
+    <!-- 로고: 클릭 시 메인 페이지로 이동 -->
+    <div class="logo">
+      <a href="main_login.html">Playcode</a>
+    </div>
+        <!-- 가운데 검색 영역: form으로 감싸서 엔터 또는 아이콘 클릭 시 search_result.html로 이동 -->
+    <div class="search-container">
+      <form class="search-form" action="search_result.html" method="get" id="searchForm">
+        <!-- name="search"으로 search_result.html에서 파라미터로 받음 -->
+        <input 
+          type="text" 
+          name="search"
+          placeholder="검색어를 입력하세요" 
+          class="search-input"
+        />
+        <!-- 돋보기 아이콘 (클릭 시 폼 전송) -->
+        <i 
+          class="fas fa-search search-icon" 
+          onclick="document.getElementById('searchForm').submit()"
+        ></i>
+      </form>
+      <!-- 주변 음악 검색 아이콘 -->
+      <div 
+        class="music-detect-icon" 
+        title="주변 음악 검색"
+        onclick="startMusicDetection()"
+      >
+        <i class="fas fa-music"></i>
+      </div>
+    </div>
+    
+    <div class="icons">
+      <!-- 햄버거 아이콘 (오른쪽 사이드바 - 메뉴) -->
+      <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
+      <!-- 프로필 아이콘 -->
+      <i class="far fa-circle icon-btn" onclick="toggleProfileSidebar()"></i>
+    </div>
+  </header>
+
+  <!-- 오른쪽 메뉴 사이드바 -->
+  <div id="menuSidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Menu</span>
+      <i class="fas fa-times" onclick="toggleMenuSidebar()"></i>
+    </div>
+    <div class="sidebar-menu">
+      <a href="#"><i class="fas fa-chart-line"></i> 내 차트</a>
+      <a href="#"><i class="fas fa-music"></i> 추천 음악</a>
+      <a href="#"><i class="fas fa-list-ul"></i> 플레이리스트</a>
+      <a href="#"><i class="fas fa-heart"></i> 마이 픽</a>
+      <a href="#"><i class="fas fa-user"></i> 마이 아티스트</a>
+    </div>
+  </div>
+
+  <!-- 오른쪽 프로필 사이드바 -->
+  <div id="profileSidebar" class="profile-sidebar">
+    <div class="profile-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Profile</span>
+      <i class="fas fa-times" onclick="toggleProfileSidebar()"></i>
+    </div>
+    <div class="profile-content">
+      <!-- 프로필 정보 예시 -->
+      <p>사용자명: John Doe</p>
+      <p>이메일: john@example.com</p>
+      <button style="margin-top:20px;">로그아웃</button>
+    </div>
+  </div>
+
+   <div class="player-container">
+        <!-- 앨범 아트 -->
+        <div class="album-art"></div>
+
+        <!-- 곡 정보 -->
+        <div class="track-info">
+        <h3>luther (with sza)</h3>
+        <p>Kendrick Lamar, SZA</p>
+        </div>
+
+        <!-- 재생바 -->
+        <div class="progress-bar">
+        <input type="range" min="0" max="100" value="30" />
+        </div>
+
+        <!-- 재생 컨트롤 -->
+        <div class="controls">
+        <i class="fas fa-random"></i>
+        <i class="fas fa-backward"></i>
+        <i class="fas fa-play-circle"></i>
+        <i class="fas fa-forward"></i>
+        <i class="fas fa-plus-circle"></i>
+        </div>
+
+        <!-- 추가 컨트롤 -->
+        <div class="extra-controls">
+        <i class="fas fa-ellipsis-h"></i>
+        </div>
+  </div>
+
+  <!-- 재생중인 노래 하단바 -->
+  <div class="now-playing">
+    <div class="song-info">
+      <span class="song-title">Now Playing: 노래 제목</span>
+      <span class="song-artist">아티스트 이름</span>
+    </div>
+    <div class="player-controls">
+      <i class="fas fa-backward"></i>
+      <i class="fas fa-play-circle"></i>
+      <i class="fas fa-forward"></i>
+    </div>
+  </div>
+
+  <script>
+    // (1) 오른쪽 메뉴 사이드바 토글
+    function toggleMenuSidebar() {
+      const sidebar = document.getElementById('menuSidebar');
+      sidebar.classList.toggle('active');
+    }
+
+    // (2) 오른쪽 프로필 사이드바 토글
+    function toggleProfileSidebar() {
+      const profileSidebar = document.getElementById('profileSidebar');
+      profileSidebar.classList.toggle('active');
+    }
+
+   // (3) 주변 음악 검색
+   function startMusicDetection() {
+      alert("주변 음악을 마이크로 감지합니다... (예시)");
+      // 실제 음성인식/주변 소리 분석 로직 추가 가능
+    }
+
+   // 국내/해외 카테고리 전환
+   function setRegion(region) {
+      const regionSwitch = document.getElementById('regionSwitch').children;
+      for (let span of regionSwitch) {
+        span.classList.remove('active');
+      }
+      if (region === 'domestic') {
+        regionSwitch[0].classList.add('active');
+      } else {
+        regionSwitch[1].classList.add('active');
+      }
+      console.log(`현재 카테고리: ${region}`);
+    }
+    
+  </script>
+</body>
+</html>
