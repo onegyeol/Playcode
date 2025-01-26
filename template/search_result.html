@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playcode - 검색결과</title>
+  <!-- Font Awesome 아이콘 (CDN) -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    integrity="sha512-..."
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <style>
+    * {
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0;
+    }
+    body {
+      font-family: sans-serif;
+      background-color: #121212;
+      color: #fff;
+      overflow-x: hidden; /* 사이드바 등장 시 화면 흔들림 방지 */
+    }
+
+    /************************************
+     (1) 상단 헤더 (전체 틀 유지)
+    ************************************/
+    .header {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      background-color: #222;
+      color: #fff;
+      padding: 0 20px;
+      z-index: 999;
+    }
+    .header .logo {
+      font-size: 1.5rem; font-weight: bold;
+    }
+    .header .logo a {
+      text-decoration: none; color: inherit;
+    }
+    .header .icons {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .icon-btn {
+      cursor: pointer; font-size: 1.2rem;
+    }
+
+    /* 국내/해외 스위치 */
+    .region-switch {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .region-switch span {
+      cursor: pointer; padding: 5px 10px;
+      border-radius: 20px; background-color: #333;
+      font-size: 0.9rem; opacity: 0.7;
+      transition: background-color 0.3s, opacity 0.3s;
+    }
+    .region-switch span:hover { opacity: 1; }
+    .region-switch span.active {
+      background-color: #555; opacity: 1;
+    }
+
+    /* 가운데 검색 영역 */
+    .search-container {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .search-form {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .search-input {
+      background: transparent; border: none; outline: none;
+      color: #ccc; font-size: 1rem;
+      width: 400px; border-bottom: 1px solid #555;
+      padding: 5px 0; transition: border-color 0.3s;
+    }
+    .search-input::placeholder { color: #555; }
+    .search-input:focus { border-color: #fff; color: #fff; }
+    .search-icon {
+      font-size: 1rem; color: #ccc; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .search-icon:hover { color: #fff; }
+    .music-detect-icon {
+      position: relative; width: 30px; height: 30px;
+      border: 2px dashed #ccc; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .music-detect-icon:hover { border-color: #fff; }
+    .music-detect-icon i {
+      color: #ccc; font-size: 0.9rem;
+    }
+    .music-detect-icon:hover i { color: #fff; }
+
+    /************************************
+     (2) 오른쪽 사이드바(메뉴) (전체 틀 유지)
+    ************************************/
+    .sidebar {
+      position: fixed; top: 0; right: -300px;
+      width: 300px; height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+      transition: 0.3s ease; z-index: 1000;
+      padding: 20px; display: flex; flex-direction: column;
+    }
+    .sidebar.active { right: 0; }
+    .sidebar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .sidebar-header i { font-size: 1.2rem; cursor: pointer; }
+    .sidebar-menu a {
+      display: block; margin: 10px 0; text-decoration: none;
+      color: #fff; font-size: 1rem;
+      transition: 0.2s;
+    }
+    .sidebar-menu a:hover { color: #555; }
+
+    /************************************
+     (3) 오른쪽 사이드바(프로필) (전체 틀 유지)
+    ************************************/
+    .profile-sidebar {
+      position: fixed; top: 0; right: -300px;
+      width: 300px; height: 100%;
+      background-color: #333;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+      transition: 0.3s ease; z-index: 1001;
+      padding: 20px; display: flex; flex-direction: column;
+    }
+    .profile-sidebar.active { right: 0; }
+    .profile-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .profile-header i { font-size: 1.2rem; cursor: pointer; }
+    .profile-content { flex: 1; }
+
+    /************************************
+     (4) 메인 컨테이너 (탭 구조)
+    ************************************/
+    .main-container {
+      margin-top: 60px; /* 헤더 높이만큼 띄움 */
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .search-tabs {
+      display: flex; gap: 10px; margin-bottom: 20px;
+    }
+    .search-tab {
+      background-color: #333; padding: 8px 15px;
+      border-radius: 20px; cursor: pointer;
+      font-size: 0.9rem; opacity: 0.7;
+      transition: opacity 0.3s, background-color 0.3s;
+    }
+    .search-tab:hover, .search-tab.active {
+      opacity: 1; background-color: #444;
+    }
+
+    /* 모든 탭 섹션은 기본 숨김, .active 시 보임 */
+    .tab-section { display: none; }
+    .tab-section.active { display: block; }
+
+    /* ============= "모두" 탭 ============= */
+    .all-section .top-result-container {
+      display: flex; gap: 30px; margin-bottom: 40px;
+    }
+    .all-section .top-artist {
+      width: 300px; background-color: #181818; padding: 20px;
+      border-radius: 10px;
+    }
+    .all-section .artist-cover {
+      width: 120px; height: 120px; border-radius: 60px;
+      margin-bottom: 10px; overflow: hidden;
+    }
+    .all-section .artist-cover img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .all-section .artist-name {
+      font-size: 1.2rem; font-weight: bold; margin-bottom: 5px;
+    }
+    .all-section .artist-role {
+      font-size: 0.9rem; color: #aaa;
+    }
+    .all-section .top-songs {
+      flex: 1;
+    }
+    .all-section .top-songs-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .all-section .top-songs-header h3 {
+      font-size: 1rem; font-weight: bold;
+    }
+    .all-section .top-songs-header a {
+      color: #bbb; font-size: 0.9rem; text-decoration: none;
+    }
+    .all-section .top-songs-header a:hover {
+      color: #fff;
+    }
+    .all-section .song-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid #333;
+    }
+    .all-section .song-item:last-child {
+      border-bottom: none;
+    }
+    .all-section .song-info-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .all-section .song-cover {
+      width: 40px; height: 40px; border-radius: 4px; overflow: hidden;
+    }
+    .all-section .song-cover img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .all-section .song-title-artist {
+      display: flex; flex-direction: column; font-size: 0.9rem;
+    }
+    .all-section .song-title-artist .title { font-weight: bold; }
+    .all-section .song-title-artist .artist {
+      color: #aaa; font-size: 0.8rem;
+    }
+    .all-section .song-duration {
+      font-size: 0.8rem; color: #ccc;
+    }
+
+    /* SZA 피처링 등 (가로 스크롤) */
+    .all-section .horizontal-section {
+      margin-bottom: 30px;
+    }
+    .all-section .horizontal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .all-section .horizontal-header h3 {
+      font-size: 1rem; font-weight: bold;
+    }
+    .all-section .horizontal-header a {
+      color: #bbb; font-size: 0.9rem; text-decoration: none;
+    }
+    .all-section .horizontal-header a:hover { color: #fff; }
+    .all-section .horizontal-cards {
+      display: flex; gap: 20px; overflow-x: auto; padding-bottom: 5px;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .all-section .horizontal-cards::-webkit-scrollbar { display: none; }
+    .all-section .h-card {
+      width: 140px; flex-shrink: 0; background-color: #181818;
+      border-radius: 8px; overflow: hidden; text-align: center;
+      cursor: pointer; transition: background-color 0.2s;
+    }
+    .all-section .h-card:hover { background-color: #222; }
+    .all-section .h-cover {
+      width: 100%; height: 140px; object-fit: cover; display: block;
+    }
+    .all-section .h-info {
+      padding: 10px; font-size: 0.9rem;
+    }
+    .all-section .h-info .h-title {
+      font-weight: bold; margin-bottom: 5px;
+    }
+    .all-section .h-info .h-sub {
+      font-size: 0.8rem; color: #aaa;
+    }
+
+    /* 아래쪽 아티스트, 앨범, 플레이리스트 섹션 (전체보기 포함) */
+    .all-section .category-block {
+      margin-bottom: 40px;
+    }
+    .all-section .category-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .all-section .category-header a {
+      color: #bbb; font-size: 0.9rem; text-decoration: none;
+    }
+    .all-section .category-header a:hover { color: #fff; }
+
+    .all-section .artist-circle-cards,
+    .all-section .album-grid,
+    .all-section .playlist-grid {
+      display: flex; gap: 20px; overflow-x: auto; padding-bottom: 5px;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .all-section .artist-circle-cards::-webkit-scrollbar,
+    .all-section .album-grid::-webkit-scrollbar,
+    .all-section .playlist-grid::-webkit-scrollbar {
+      display: none;
+    }
+    .all-section .artist-circle-card {
+      width: 90px; height: 90px; border-radius: 45px; overflow: hidden;
+      background-color: #181818; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .all-section .artist-circle-card img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .all-section .album-card, .all-section .playlist-card {
+      width: 120px; flex-shrink: 0; background-color: #181818;
+      border-radius: 8px; overflow: hidden; cursor: pointer;
+      transition: background-color 0.2s; text-align: center;
+    }
+    .all-section .album-card:hover, .all-section .playlist-card:hover {
+      background-color: #222;
+    }
+    .all-section .album-cover, .all-section .playlist-cover {
+      width: 100%; height: 120px; object-fit: cover; display: block;
+    }
+    .all-section .album-info, .all-section .playlist-info {
+      padding: 10px; font-size: 0.9rem;
+    }
+    .all-section .album-info .album-sub,
+    .all-section .playlist-info .playlist-sub {
+      font-size: 0.8rem; color: #aaa;
+    }
+
+    /* ----------------- 다른 탭들 ----------------- */
+
+    /* 아티스트 탭 */
+    .artist-section h2 {
+      font-size: 1.3rem; margin-bottom: 20px; font-weight: bold;
+    }
+    .artist-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+      gap: 20px;
+    }
+    .artist-card {
+      width: 120px; height: 120px; border-radius: 60px; overflow: hidden;
+      background-color: #181818; cursor: pointer; 
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .artist-card img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .artist-card:hover { background-color: #222; }
+
+    /* 곡 탭 */
+    .track-section h2 {
+      font-size: 1.3rem; margin-bottom: 20px; font-weight: bold;
+    }
+    .track-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .track-table th, .track-table td {
+      text-align: left; padding: 8px; border-bottom: 1px solid #333;
+      font-size: 0.9rem;
+    }
+    .track-table th { color: #bbb; font-weight: normal; }
+
+    /* 앨범 탭 */
+    .album-section h2 {
+      font-size: 1.3rem; margin-bottom: 20px; font-weight: bold;
+    }
+    .album-list {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+      gap: 20px;
+    }
+    .album-item {
+      background-color: #181818; border-radius: 8px; overflow: hidden;
+      text-align: center; cursor: pointer; transition: background-color 0.2s;
+    }
+    .album-item:hover { background-color: #222; }
+    .album-cover-lg {
+      width: 100%; height: 140px; object-fit: cover;
+      display: block;
+    }
+    .album-desc {
+      padding: 10px; font-size: 0.9rem;
+    }
+    .album-desc .album-year { font-size: 0.8rem; color: #aaa; }
+
+    /* 플레이리스트 탭 */
+    .playlist-section h2 {
+      font-size: 1.3rem; margin-bottom: 20px; font-weight: bold;
+    }
+    .playlist-grid-lg {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+      gap: 20px;
+    }
+    .playlist-item {
+      background-color: #181818; border-radius: 8px; overflow: hidden;
+      text-align: center; cursor: pointer; transition: background-color 0.2s;
+    }
+    .playlist-item:hover { background-color: #222; }
+    .playlist-cover-lg {
+      width: 100%; height: 140px; object-fit: cover; display: block;
+    }
+    .playlist-info-lg {
+      padding: 10px; font-size: 0.9rem;
+    }
+    .playlist-info-lg .playlist-sub-lg {
+      font-size: 0.8rem; color: #aaa;
+    }
+
+    /* 가사 탭 */
+    .lyrics-section h2 {
+      font-size: 1.3rem; margin-bottom: 20px; font-weight: bold;
+    }
+    .lyrics-list {
+      background-color: #181818; border-radius: 8px; padding: 20px;
+    }
+    .lyrics-item {
+      border-bottom: 1px solid #333; padding: 10px 0;
+    }
+    .lyrics-item:last-child { border-bottom: none; }
+    .lyrics-item .title {
+      font-weight: bold; margin-bottom: 5px;
+    }
+    .lyrics-item .artist {
+      font-size: 0.9rem; color: #aaa;
+    }
+    .lyrics-snippet {
+      margin-top: 5px; font-size: 0.85rem; color: #bbb;
+    }
+
+    /************************************
+     (5) 하단 재생중인 노래 (전체 틀 유지)
+    ************************************/
+    .now-playing {
+      position: fixed; bottom: 0; left: 0;
+      width: 100%; height: 60px;
+      background-color: #222; color: #fff;
+      display: flex; align-items: center; padding: 0 20px;
+      z-index: 9999;
+    }
+    .now-playing .song-info {
+      flex: 1; display: flex; flex-direction: column; justify-content: center;
+    }
+    .song-title { font-size: 1rem; font-weight: bold; }
+    .song-artist { font-size: 0.9rem; color: #aaa; }
+    .player-controls {
+      display: flex; align-items: center; gap: 15px;
+    }
+    .player-controls i { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <!-- (A) 상단 헤더 (그대로 유지) -->
+  <header class="header">
+    <div class="logo"><a href="main_login.html">Playcode</a></div>
+    <div class="search-container">
+      <form class="search-form" action="search_result.html" method="get" id="searchForm">
+        <input 
+          type="text" 
+          name="search"
+          placeholder="검색어를 입력하세요" 
+          class="search-input"
+        />
+        <i 
+          class="fas fa-search search-icon"
+          onclick="document.getElementById('searchForm').submit()"
+        ></i>
+      </form>
+      <div class="music-detect-icon" title="주변 음악 검색" onclick="startMusicDetection()">
+        <i class="fas fa-music"></i>
+      </div>
+    </div>
+    <div class="icons">
+      <div class="region-switch" id="regionSwitch">
+        <span class="active" onclick="setRegion('domestic')">국내</span>
+        <span onclick="setRegion('international')">해외</span>
+      </div>
+      <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
+      <i class="far fa-circle icon-btn" onclick="toggleProfileSidebar()"></i>
+    </div>
+  </header>
+
+  <!-- (B) 메뉴 사이드바 (그대로 유지) -->
+  <div id="menuSidebar" class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Menu</span>
+      <i class="fas fa-times" onclick="toggleMenuSidebar()"></i>
+    </div>
+    <div class="sidebar-menu">
+      <a href="#"><i class="fas fa-chart-line"></i> 내 차트</a>
+      <a href="#"><i class="fas fa-music"></i> 추천 음악</a>
+      <a href="#"><i class="fas fa-list-ul"></i> 플레이리스트</a>
+      <a href="#"><i class="fas fa-heart"></i> 마이 픽</a>
+      <a href="#"><i class="fas fa-user"></i> 마이 아티스트</a>
+    </div>
+  </div>
+
+  <!-- (C) 프로필 사이드바 (그대로 유지) -->
+  <div id="profileSidebar" class="profile-sidebar">
+    <div class="profile-header">
+      <span style="font-weight:bold;font-size:1.1rem;">Profile</span>
+      <i class="fas fa-times" onclick="toggleProfileSidebar()"></i>
+    </div>
+    <div class="profile-content">
+      <p>사용자명: John Doe</p>
+      <p>이메일: john@example.com</p>
+      <button style="margin-top:20px;">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- (D) 메인 영역 (탭 구조) -->
+  <div class="main-container">
+    <!-- 탭 버튼들 -->
+    <div class="search-tabs">
+      <div class="search-tab active" onclick="showTab('all')">모두</div>
+      <div class="search-tab" onclick="showTab('artist')">아티스트</div>
+      <div class="search-tab" onclick="showTab('track')">곡</div>
+      <div class="search-tab" onclick="showTab('album')">앨범</div>
+      <div class="search-tab" onclick="showTab('playlist')">플레이리스트</div>
+      <div class="search-tab" onclick="showTab('lyrics')">가사</div>
+    </div>
+
+    <!-- (D1) "모두" 탭 -->
+    <div id="all" class="tab-section all-section active">
+      <!-- 상위 결과 -->
+      <div class="top-result-container">
+        <!-- 왼쪽: 아티스트 카드 -->
+        <a href="artist.html" class="top-artist" style="text-decoration:none; color:inherit;">
+          <div class="artist-cover">
+            <img src="https://via.placeholder.com/300x300?text=SZA" alt="Artist Cover">
+          </div>
+          <div class="artist-name">SZA</div>
+          <div class="artist-role">아티스트</div>
+        </a>
+        <!-- 오른쪽: 곡 목록 -->
+        <div class="top-songs">
+          <div class="top-songs-header">
+            <h3>곡</h3>
+            <a href="#" onclick="showTab('track')">전체보기</a>
+          </div>
+          <div class="song-item">
+            <div class="song-info-row">
+              <div class="song-cover">
+                <img src="https://via.placeholder.com/300x300?text=SZA" alt="Song Cover">
+              </div>
+              <div class="song-title-artist">
+                <span class="title">What Do I Do</span>
+                <span class="artist">SZA</span>
+              </div>
+            </div>
+            <div class="song-duration">2:47</div>
+          </div>
+          <div class="song-item">
+            <div class="song-info-row">
+              <div class="song-cover">
+                <img src="https://via.placeholder.com/300x300?text=Kendrick+Lamar" alt="Song Cover">
+              </div>
+              <div class="song-title-artist">
+                <span class="title">luther (with sza)</span>
+                <span class="artist">Kendrick Lamar, SZA</span>
+              </div>
+            </div>
+            <div class="song-duration">2:57</div>
+          </div>
+          <!-- ... -->
+        </div>
+      </div>
+
+      <!-- 예: SZA 피처링 (가로 스크롤) -->
+      <div class="horizontal-section">
+        <div class="horizontal-header">
+          <h3>SZA 피처링</h3>
+          <a href="#">전체보기</a>
+        </div>
+        <div class="horizontal-cards">
+          <div class="h-card">
+            <img class="h-cover" src="https://via.placeholder.com/300x300?text=This+Is+SZA" alt="This is SZA">
+            <div class="h-info">
+              <div class="h-title">This Is SZA</div>
+              <div class="h-sub">만든 사람: Spotify</div>
+            </div>
+          </div>
+          <!-- ... -->
+        </div>
+      </div>
+
+      <!-- 아티스트 섹션 (원형) -->
+      <div class="category-block">
+        <div class="category-header">
+          <h3>아티스트</h3>
+          <a href="#" onclick="showTab('artist')">전체보기</a>
+        </div>
+        <div class="artist-circle-cards">
+          <div class="artist-circle-card">
+            <img src="https://via.placeholder.com/300x300?text=SZA" alt="SZA"/>
+          </div>
+          <!-- ... -->
+        </div>
+      </div>
+
+      <!-- 앨범 섹션 -->
+      <div class="category-block">
+        <div class="category-header">
+          <h3>앨범</h3>
+          <a href="#" onclick="showTab('album')">전체보기</a>
+        </div>
+        <div class="album-grid">
+          <div class="album-card">
+            <img class="album-cover" src="https://via.placeholder.com/300x300?text=SOS" alt="Album Cover">
+            <div class="album-info">
+              <div>SOS</div>
+              <div class="album-sub">2022 • SZA</div>
+            </div>
+          </div>
+          <!-- ... -->
+        </div>
+      </div>
+
+      <!-- 플레이리스트 섹션 -->
+      <div class="category-block">
+        <div class="category-header">
+          <h3>플레이리스트</h3>
+          <a href="#" onclick="showTab('playlist')">전체보기</a>
+        </div>
+        <div class="playlist-grid">
+          <div class="playlist-card">
+            <img class="playlist-cover" src="https://via.placeholder.com/300x300?text=SZA+Playlist" alt="Playlist Cover">
+            <div class="playlist-info">
+              <div class="category-title">BEST SZA SONGS</div>
+              <div class="playlist-sub">만든 사람: N0</div>
+            </div>
+          </div>
+          <!-- ... -->
+        </div>
+      </div>
+    </div><!-- /#all (모두 탭) -->
+
+    <!-- (D2) 아티스트 탭 (자세히) -->
+    <div id="artist" class="tab-section artist-section">
+      <h2>아티스트</h2>
+      <div class="artist-grid">
+        <!-- 예: 원형 카드 목록 -->
+        <div class="artist-card">
+          <img src="https://via.placeholder.com/300x300?text=SZA" alt="SZA"/>
+        </div>
+        <div class="artist-card">
+          <img src="https://via.placeholder.com/300x300?text=SAZ" alt="SAZ"/>
+        </div>
+        <div class="artist-card">
+          <img src="https://via.placeholder.com/300x300?text=Saz" alt="Saz"/>
+        </div>
+        <!-- ... 더 많은 아티스트 -->
+      </div>
+    </div>
+
+    <!-- (D3) 곡 탭 (자세히) -->
+    <div id="track" class="tab-section track-section">
+      <h2>곡</h2>
+      <!-- 표 형태로 곡 목록 -->
+      <table class="track-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>제목</th>
+            <th>아티스트</th>
+            <th>앨범</th>
+            <th style="width:60px;">재생시간</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>What Do I Do</td>
+            <td>SZA</td>
+            <td>SOS</td>
+            <td>2:47</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Snooze</td>
+            <td>SZA</td>
+            <td>SOS</td>
+            <td>3:21</td>
+          </tr>
+          <!-- ... -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- (D4) 앨범 탭 (자세히) -->
+    <div id="album" class="tab-section album-section">
+      <h2>앨범</h2>
+      <div class="album-list">
+        <div class="album-item">
+          <img class="album-cover-lg" src="https://via.placeholder.com/300x300?text=SOS" alt="SOS Album"/>
+          <div class="album-desc">
+            <div>SOS</div>
+            <div class="album-year">2022 • SZA</div>
+          </div>
+        </div>
+        <div class="album-item">
+          <img class="album-cover-lg" src="https://via.placeholder.com/300x300?text=SOS+Deluxe" alt="SOS Deluxe Album"/>
+          <div class="album-desc">
+            <div>SOS Deluxe</div>
+            <div class="album-year">2024 • SZA</div>
+          </div>
+        </div>
+        <!-- ... -->
+      </div>
+    </div>
+
+    <!-- (D5) 플레이리스트 탭 (자세히) -->
+    <div id="playlist" class="tab-section playlist-section">
+      <h2>플레이리스트</h2>
+      <div class="playlist-grid-lg">
+        <div class="playlist-item">
+          <img class="playlist-cover-lg" src="https://via.placeholder.com/300x300?text=SZA+Playlist" alt="Playlist Cover"/>
+          <div class="playlist-info-lg">
+            <div class="category-title">BEST SZA SONGS</div>
+            <div class="playlist-sub-lg">만든 사람: N0</div>
+          </div>
+        </div>
+        <div class="playlist-item">
+          <img class="playlist-cover-lg" src="https://via.placeholder.com/300x300?text=This+Is+SZA" alt="Playlist Cover"/>
+          <div class="playlist-info-lg">
+            <div class="category-title">This Is SZA</div>
+            <div class="playlist-sub-lg">만든 사람: Spotify</div>
+          </div>
+        </div>
+        <!-- ... -->
+      </div>
+    </div>
+
+    <!-- (D6) 가사 탭 (자세히) -->
+    <div id="lyrics" class="tab-section lyrics-section">
+      <h2>가사 검색 결과</h2>
+      <div class="lyrics-list">
+        <div class="lyrics-item">
+          <div class="title">Doves In The Wind (Feat. Kendrick Lamar)</div>
+          <div class="artist">SZA</div>
+          <div class="lyrics-snippet">
+            ...aint feelin' you Think I caught a vibe kinda feel a n...
+          </div>
+        </div>
+        <div class="lyrics-item">
+          <div class="title">luther (with sza)</div>
+          <div class="artist">Kendrick Lamar, SZA</div>
+          <div class="lyrics-snippet">
+            If this world were mine Hey, Roman numeral seven, bae...
+          </div>
+        </div>
+        <!-- ... -->
+      </div>
+    </div>
+  </div><!-- /main-container -->
+
+  <!-- (5) 하단 재생 바 (전체 틀 유지) -->
+  <div class="now-playing">
+    <div class="song-info">
+      <span class="song-title">Now Playing: 노래 제목</span>
+      <span class="song-artist">아티스트 이름</span>
+    </div>
+    <div class="player-controls">
+      <i class="fas fa-backward"></i>
+      <i class="fas fa-play-circle"></i>
+      <i class="fas fa-forward"></i>
+    </div>
+  </div>
+
+  <script>
+    // 사이드바 열고 닫기
+    function toggleMenuSidebar() {
+      const sidebar = document.getElementById('menuSidebar');
+      sidebar.classList.toggle('active');
+    }
+    // 프로필 사이드바 열고 닫기
+    function toggleProfileSidebar() {
+      const profileSidebar = document.getElementById('profileSidebar');
+      profileSidebar.classList.toggle('active');
+    }
+    // 주변 음악 검색
+    function startMusicDetection() {
+      alert("주변 음악을 마이크로 감지합니다... (예시)");
+      // 실제 로직 필요
+    }
+    // 국내/해외 카테고리 전환
+    function setRegion(region) {
+      const regionSwitch = document.getElementById('regionSwitch').children;
+      for (let span of regionSwitch) {
+        span.classList.remove('active');
+      }
+      if (region === 'domestic') {
+        regionSwitch[0].classList.add('active');
+      } else {
+        regionSwitch[1].classList.add('active');
+      }
+      console.log(`현재 카테고리: ${region}`);
+    }
+
+    // 탭 전환 함수
+    function showTab(tabId) {
+      // 모든 탭 버튼에서 active 제거
+      const tabButtons = document.querySelectorAll('.search-tab');
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+
+      // 현재 클릭한 탭에 active 추가
+      const currentBtn = document.querySelector(`.search-tab[onclick="showTab('${tabId}')"]`);
+      if(currentBtn) currentBtn.classList.add('active');
+
+      // 모든 섹션 숨기고
+      const sections = document.querySelectorAll('.tab-section');
+      sections.forEach(sec => sec.classList.remove('active'));
+
+      // 선택한 섹션만 표시
+      const target = document.getElementById(tabId);
+      if(target) target.classList.add('active');
+    }
+  </script>
+</body>
+</html>
