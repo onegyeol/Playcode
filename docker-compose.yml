@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: my-django-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "0414"
+      MYSQL_DATABASE: "playcode"
+      MYSQL_USER: "django_user"
+      MYSQL_PASSWORD: "0414"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - playcode_playcode_network
+
+  web:
+    build: .
+    container_name: django-web
+    command: >
+      sh -c "./wait-for-it.sh my-django-db:3306 -- python manage.py migrate &&
+           python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
+    networks:
+      - playcode_playcode_network
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+
+volumes:
+  mysql_data:
+
+networks:
+  playcode_playcode_network:
+    driver: bridge
