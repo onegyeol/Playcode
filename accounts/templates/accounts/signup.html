@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Playcode - signup</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                background: #333333;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                font-family: 'Montserrat', sans-serif;
+                height: 100vh;
+                margin: 0;
+            }
+            .container {
+                background-color: #333333;
+                border-radius: 10px;
+                box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+                            0 10px 10px rgba(0, 0, 0, 0.22);
+                display: flex;
+                overflow: hidden;
+                width: 768px;
+                max-width: 100%;
+                min-height: 480px;
+            }
+            .left-panel {
+                background-color: #FFFFFF;
+                border-radius: 10px;
+                color: #333333;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                text-align: center;
+            }
+            .right-panel {
+                background-color: #692d2d;
+                border-radius: 10px;
+                color: #FFFFFF;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+            h1 {
+                font-weight: bold;
+                margin: 0;
+            }
+            p {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+            form {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 80%;
+            }
+            input {
+                background-color: #eee;
+                border: none;
+                border-radius: 5px;
+                margin: 10px 0;
+                padding: 12px 15px;
+                width: 100%;
+            }
+            button {
+                border-radius: 20px;
+                border: 1px solid #FFFFFF;
+                background-color: #692d2d;
+                color: #FFFFFF;
+                font-size: 12px;
+                font-weight: bold;
+                padding: 12px 45px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                transition: transform 80ms ease-in;
+            }
+            button:active {
+                transform: scale(0.95);
+            }
+            button:focus {
+                outline: none;
+            }
+            button:hover {
+                transform: scale(1.05);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- 왼쪽 패널 -->
+            <div class="left-panel">
+                <h1>Welcome Back!</h1>
+                <p>To keep connected with us please login with your personal info</p>
+                <button id="signIn">Sign In</button>
+            </div>
+
+            <!-- 오른쪽 패널 -->
+            <div class="right-panel">
+                <h1>Create Account</h1>
+                <!-- 폼 태그를 수정하여 POST 요청을 보내도록 수정 -->
+                <form method="POST" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    <input type="text" name="username" placeholder="Name" required />
+                    <input type="email" name="email" placeholder="Email" required />
+                    <input type="password" name="password" placeholder="Password" required />
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required />
+                    {% if messages %}
+                    <div class="alert">
+                        {% for message in messages %}
+                            <div class="message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <button type="submit">Sign Up</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("signIn").addEventListener("click", function () {
+                window.location.href = "{% url 'login' %}";
+            });
+        </script>
+    </body>
+</html>

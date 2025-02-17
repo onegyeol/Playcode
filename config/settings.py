@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main',
     'accounts',
 ]
 
@@ -60,7 +61,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # 프로젝트 루트의 templates 디렉토리
+        "DIRS": [BASE_DIR / "templates", "/app/main/templates"],  # 프로젝트 루트의 templates 디렉토리
         "APP_DIRS": True,  # 앱 내부의 templates 디렉토리 자동 검색
         "OPTIONS": {
             "context_processors": [
