@@ -16,7 +16,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = 'django-insecure-5#-8)g+_)-e42_kd-6qz-ipe($x+0f43@m4g#0l0icwgj3houi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '3.38.125.57',  # EC2 퍼블릭 IP 주소
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'accounts',
     'spotify',
     'playlist',
+    'song',
+    'album',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +77,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
 SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "")
+MUSIXMATCH_API_KEY = "5ce967ea14fb9e9cff609168f4c51d39"
+GENIUS_API_KEY="P4EfV3Y8QM2wCmri1zZ6tX-sWC1HaPL0XL485sMliem24339g3HgghYoZIrC_WaD"
+
 
 # MySQL 데이터베이스 설정
 DATABASES = {
@@ -83,7 +88,7 @@ DATABASES = {
         'NAME': os.getenv("DB_NAME", "playcode"),
         'USER': os.getenv("DB_USER", "django_user"),
         'PASSWORD': os.getenv("DB_PASSWORD", "0414"),
-        'HOST': os.getenv("DB_HOST", "3.38.125.57"),
+        'HOST': os.getenv("DB_HOST", "my-django-db"),
         'PORT': os.getenv("DB_PORT", "3306"),
     }
 }
@@ -133,4 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 # CSRF 보호를 위한 도메인 명시
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://3.38.125.57").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "http://3.38.125.57",
+    "http://3.38.125.57:8000",
+    "http://localhost:8000"
+]
