@@ -256,7 +256,22 @@
     }
 
     .track-info .title {
+      text-decoration: none; /* 밑줄 제거 */
+      color: #fff; /* 흰색 */
       font-size: 1rem;
+      font-weight: bold;
+    }
+
+    /* 방문한 링크 스타일 */
+    .track-info .title:visited {
+      text-decoration: none;
+      color: #fff; /* 방문 후에도 흰색 유지 */
+    }
+
+    /* 마우스 오버 시 스타일 (선택 사항) */
+    .track-info .title:hover {
+      text-decoration: none;
+      color: #ccc; /* 살짝 회색으로 변경 (선택 사항) */
     }
 
     .track-info .artist {
@@ -371,21 +386,25 @@
 
     <div class="track-list">
       {% for track in tracks %}
-        <div class="track-item">
+      <div class="track-item">
           <div class="track-rank">{{ forloop.counter }}</div>
           <div class="track-cover">
-            <img src="{{ track.image_url }}" alt="cover" />
-          </div>
+            <a href="{% url 'album_detail' track.album.spotify_id %}">
+                <img src="{{ track.image_url }}" alt="cover" />
+            </a> 
+          </div>        
           <div class="track-info">
-            <span class="title">{{ track.name }}</span>
-            <span class="artist">{{ track.artist }}</span>
+              <!-- 🎵 곡 제목 클릭 시 곡 상세 페이지로 이동 -->
+              <a href="{% url 'song_detail' track.spotify_id %}" class="title">{{ track.name }}</a>
+              <span class="artist">{{ track.artist }}</span>
           </div>
           <i class="fas fa-play track-play"></i>
-        </div>
-        {% empty %}
-          <p style="text-align: center; padding: 20px;">곡 목록이 없습니다.</p>
-      {% endfor %}
       </div>
+      {% empty %}
+      <p style="text-align: center; padding: 20px;">곡 목록이 없습니다.</p>
+      {% endfor %}
+    </div>
+  
   </div>
 
 

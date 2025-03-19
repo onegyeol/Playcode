@@ -1,4 +1,5 @@
 from django.db import models
+from album.models import Album
 
 class Playlist(models.Model):
     spotify_id = models.CharField(max_length=255, unique=True)  # Spotify에서 제공하는 고유 ID
@@ -16,3 +17,4 @@ class Track(models.Model):
     name = models.CharField(max_length=255)
     artist = models.CharField(max_length=255)
     image_url = models.URLField(null=True, blank=True)
+    album = models.ForeignKey(Album, on_delete=models.CASCADE, null=True, blank=True)

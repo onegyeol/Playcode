@@ -2,6 +2,8 @@ import spotipy
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+
+from album.models import Album
 from .models import Playlist, Track
 from spotify.views import refresh_token
 
@@ -134,10 +136,11 @@ def get_playlist_tracks(request, playlist_id):
     # 플레이리스트 객체 가져오기
     playlist = get_object_or_404(Playlist, spotify_id=playlist_id)
 
+    # Spotify API 객체 생성
+    sp = spotipy.Spotify(auth=token_info["access_token"])
+
     # DB에 곡 목록이 없으면 Spotify API 호출
     if not Track.objects.filter(playlist=playlist).exists():
-        sp = spotipy.Spotify(auth=token_info["access_token"])
-
         try:
             results = sp.playlist_tracks(playlist_id)
         except spotipy.exceptions.SpotifyException as e:
@@ -145,7 +148,7 @@ def get_playlist_tracks(request, playlist_id):
                 print("🔹 Access Token 만료 → 자동 갱신 진행")
                 token_info = refresh_token(request)
                 if not token_info:
-                    return redirect("spotify_login")  # 토큰 갱신 실패 시 로그인 페이지로 이동
+                    return redirect("spotify_login")
                 sp = spotipy.Spotify(auth=token_info["access_token"])
                 results = sp.playlist_tracks(playlist_id)
             else:
@@ -154,16 +157,64 @@ def get_playlist_tracks(request, playlist_id):
         # DB에 저장
         for item in results["items"]:
             track = item["track"]
+            album_data = track["album"]
+            album_spotify_id = album_data["id"]
+
+            # ✅ 앨범이 이미 있는지 확인하고 없으면 생성
+            album, created = Album.objects.get_or_create(
+                spotify_id=album_spotify_id,
+                defaults={
+                    "name": album_data["name"],
+                    "artist": ", ".join([artist["name"] for artist in album_data["artists"]]),
+                    "image_url": album_data["images"][0]["url"] if album_data["images"] else None
+                }
+            )
+
+            if created:
+                print(f"✅ 새 앨범 생성: {album.name}", flush=True)
+
+            # ✅ 트랙 저장 (album을 강제로 업데이트)
             Track.objects.update_or_create(
                 spotify_id=track["id"],
                 playlist=playlist,
                 defaults={
                     "name": track["name"],
                     "artist": track["artists"][0]["name"],
-                    "image_url": track["album"]["images"][0]["url"] if track["album"]["images"] else None
+                    "image_url": track["album"]["images"][0]["url"] if track["album"]["images"] else None,
+                    "album": album  # ✅ 앨범 연결
                 }
             )
 
+    # ✅ 이미 저장된 데이터 중 album이 없는 트랙 처리
+    tracks_without_album = Track.objects.filter(playlist=playlist, album__isnull=True)
+    for track in tracks_without_album:
+        track_data = sp.track(track.spotify_id)
+        album_data = track_data["album"]
+        album_spotify_id = album_data["id"]
+
+        # 앨범 객체 가져오기 또는 생성
+        album, created = Album.objects.get_or_create(
+            spotify_id=album_spotify_id,
+            defaults={
+                "name": album_data["name"],
+                "artist": ", ".join([artist["name"] for artist in album_data["artists"]]),
+                "image_url": album_data["images"][0]["url"] if album_data["images"] else None
+            }
+        )
+
+        # 트랙의 album 필드 업데이트
+        track.album = album
+        track.save()
+        print(f"✅ 기존 트랙 '{track.name}'에 앨범 '{album.name}' 연결 완료", flush=True)
+
     # 저장된 곡 목록 가져오기
     tracks = Track.objects.filter(playlist=playlist)
+
+    # 각 트랙의 album과 album.spotify_id 로그 출력
+    for track in tracks:
+        if track.album:
+            print(f"✅ Track: {track.name}, Album ID: {track.album.spotify_id}", flush=True)
+        else:
+            print(f"❌ Track: {track.name} has no Album linked!", flush=True)
+
     return render(request, "playlist/playlist_tracks.html", {"playlist": playlist, "tracks": tracks})
