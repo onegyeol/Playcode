@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Playcode - {{ song.title }} Info</title>
+
+        <!-- Font Awesome 아이콘(CDN) 사용 예시 -->
+        <link 
+            rel="stylesheet" 
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" 
+            crossorigin="anonymous" 
+        />
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0; 
+                padding: 0;
+            }
+            body {
+                font-family: sans-serif;
+                background-color: #121212;
+                color: #fff;
+                overflow-x: hidden; /* 사이드바 등장시 흔들림 방지 */
+                padding-bottom: 80px; /* 하단 재생 바 높이만큼 패딩 추가 */
+            }
+
+            /*****************************************
+            상단 헤더 
+            *****************************************/
+            .header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background-color: #222;
+                color: #fff;
+                padding: 0 20px;
+                z-index: 999;
+                }
+                .header .logo {
+                font-size: 1.5rem;
+                font-weight: bold;
+                }
+                .header .icons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                }
+                .icon-btn {
+                cursor: pointer;
+                font-size: 1.2rem;
+                }
+
+                /* 로고 스타일 */
+                .logo a {
+                text-decoration: none; /* 밑줄 제거 */
+                color: #fff; /* 흰색 */
+                font-size: 1.8rem; /* 글자 크기 */
+                font-weight: bold;
+                }
+
+                /* 방문한 링크 스타일 */
+                .logo a:visited {
+                text-decoration: none;
+                color: #fff; /* 방문 후에도 흰색 유지 */
+                }
+
+                /* 마우스 오버 시 스타일 (선택 사항) */
+                .logo a:hover {
+                text-decoration: none;
+                color: #5b1927; 
+            }
+
+            /* 가운데 검색 영역 (폼) */
+            .search-container {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            /* form 기본 스타일 제거 */
+            .search-form {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .search-input {
+                background: transparent;
+                border: none;
+                outline: none;
+                color: #ccc;
+                font-size: 1rem;
+                width: 400px; 
+                border-bottom: 1px solid #555; 
+                padding: 5px 0;
+                transition: border-color 0.3s;
+            }
+            .search-input::placeholder {
+                color: #555;
+            }
+            .search-input:focus {
+                border-color: #fff;
+                color: #fff;
+            }
+            .search-icon {
+                font-size: 1rem;
+                color: #ccc;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+            .search-icon:hover {
+                color: #fff;
+            }
+
+            /* 주변 음악 검색 아이콘 */
+            .music-detect-icon {
+                position: relative;
+                width: 30px;
+                height: 30px;
+                border: 2px dashed #ccc;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: border-color 0.2s;
+            }
+            .music-detect-icon:hover {
+                border-color: #fff;
+            }
+            .music-detect-icon i {
+                color: #ccc;
+                font-size: 0.9rem;
+            }
+            .music-detect-icon:hover i {
+                color: #fff;
+            }
+            
+            /*****************************************
+            오른쪽 사이드바(메뉴)
+            *****************************************/
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -300px; /* 처음에는 화면 밖 */
+                width: 300px;
+                height: 100%;
+                background-color: #333;
+                box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+                transition: 0.3s ease;
+                z-index: 1000;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+            }
+            .sidebar.active {
+                right: 0;
+            }
+            .sidebar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+            .sidebar-header i {
+                font-size: 1.2rem;
+                cursor: pointer;
+            }
+            .sidebar-menu a {
+                display: block;
+                margin: 10px 0;
+                text-decoration: none;
+                color: #fff;
+                font-size: 1rem;
+                transition: 0.2s;
+            }
+            .sidebar-menu a:hover {
+                color: #555;
+            }
+
+            /*****************************************
+            오른쪽 사이드바(프로필)
+            *****************************************/
+            .profile-sidebar {
+                position: fixed;
+                top: 0;
+                right: -300px; /* 화면 밖 */
+                width: 300px;
+                height: 100%;
+                background-color: #333;
+                box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+                transition: 0.3s ease;
+                z-index: 1001; /* 메뉴 사이드바보다 더 위 */
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+            }
+            .profile-sidebar.active {
+                right: 0;
+            }
+            .profile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+            }
+            .profile-header i {
+                font-size: 1.2rem;
+                cursor: pointer;
+            }
+            .profile-content {
+                flex: 1;
+            }
+
+            /*****************************************
+            곡 정보 영역 스타일
+            *****************************************/
+            .song-info-container {
+                display: flex; /* 좌우 배치 */
+                align-items: center;
+                justify-content: center;
+                gap: 20px; /* 앨범 커버와 곡 정보 사이 간격 */
+                margin-top: 100px;
+                padding: 20px;
+            }
+            .song-title-container {
+                display: flex;
+                align-items: center; /* 수직 정렬 */
+                gap: 10px; /* 제목과 버튼 간격 */
+            }
+            .menu-btn {
+                margin-bottom: 15px;
+                font-size: 1.2rem;
+                cursor: pointer;
+                color: #fff;
+            }
+            .album-cover img {
+                width: 250px;
+                height: 250px;
+                border-radius: 10px;
+                object-fit: cover;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            }
+            .song-details {
+                display: flex;
+                flex-direction: column; /* 곡 제목, 앨범, 아티스트 정보 세로 정렬 */
+                align-items: flex-start; /* 왼쪽 정렬 */
+                justify-content: center;
+                text-align: left; /* 텍스트 왼쪽 정렬 */
+            }
+            .song-details .song-title {
+                font-size: 2rem;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .song-details .song-album,
+            .song-details .song-artist {
+                font-size: 1.2rem;
+                color: #aaa;
+                margin-bottom: 5px;
+            }
+            .song-options .favorite {
+                font-size: 2rem;
+                color: #ffd700;
+                cursor: pointer;
+                margin-top: 20px;
+            }
+
+            /* 즐겨찾기 아이콘 */
+            .song-details .favorite {
+                font-size: 1.8rem;
+                color: #ffd700;
+                cursor: pointer;
+                margin-top: 10px; /* 아티스트 정보와 간격 추가 */
+                transition: color 0.2s ease-in-out;
+            }
+            .song-details .favorite:hover {
+                color: #ffcc00; /* 아이콘 호버 시 밝은 색 */
+            }
+
+            /*****************************************
+            팝업 메뉴 스타일
+            *****************************************/
+            .popup-menu {
+                position: absolute;
+                display: none; /* 기본적으로 숨김 */
+                background-color: #333;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                padding: 10px;
+                z-index: 1000;
+                width: 170px; /* 팝업 메뉴 너비 */
+                text-align: left;
+            }
+
+            .popup-menu a {
+                display: block;
+                padding: 10px;
+                color: #fff;
+                text-decoration: none;
+                font-size: 0.9rem;
+                transition: background-color 0.2s;
+            }
+
+            .popup-menu a:hover {
+                background-color: #444;
+            }
+
+            /*****************************************
+            노래 가사 스타일
+            *****************************************/
+            .song-lyrics {
+                margin-top: 30px; /* 곡 정보와 간격 */
+                text-align: center; /* 중앙 정렬 */
+                color: #ccc; /* 가사 색상 */
+                font-size: 1.1rem; /* 글씨 크기 */
+                line-height: 1.6; /* 줄 간격 */
+                max-width: 800px; /* 가사 영역 최대 폭 */
+                margin-left: auto; /* 중앙 정렬 */
+                margin-right: auto; /* 중앙 정렬 */
+                padding: 0 20px; /* 좌우 여백 */
+            }
+            .song-lyrics p {
+                white-space: pre-wrap; /* 개행 처리 */
+            }
+
+            /*****************************************
+            재생중인 노래 (하단)
+            *****************************************/
+            .now-playing {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 60px;
+                background-color: #222;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+            }
+            .song-info {
+                display: flex;
+                flex-direction: column;
+            }
+            .song-title {
+                font-size: 1rem;
+                font-weight: bold;
+            }
+            .song-artist {
+                font-size: 0.9rem;
+                color: #aaa;
+            }
+            .player-controls i {
+                font-size: 1.5rem;
+                cursor: pointer;
+                margin-left: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 상단 헤더 -->
+        <header class="header">
+            <!-- 로고: 클릭 시 메인 페이지로 이동 -->
+            <div class="logo">
+            <a href="/">Playcode</a>
+            </div>
+
+            <div class="icons">
+            <i class="fas fa-bars icon-btn" onclick="toggleMenuSidebar()"></i>
+            <i class="far fa-circle icon-btn" onclick="toggleProfileSidebar()"></i>
+            </div>
+        </header>
+        
+        <!-- 오른쪽 메뉴 사이드바 -->
+        <div id="menuSidebar" class="sidebar">
+            <div class="sidebar-header">
+            <span style="font-weight:bold;font-size:1.1rem;">Menu</span>
+            <i class="fas fa-times" onclick="toggleMenuSidebar()"></i>
+            </div>
+            <div class="sidebar-menu">
+            <a href="#"><i class="fas fa-chart-line"></i> 내 차트</a>
+            <a href="#"><i class="fas fa-music"></i> 추천 음악</a>
+            <a href="/playlist/"><i class="fas fa-list-ul"></i> 플레이리스트</a>
+            <a href="#"><i class="fas fa-heart"></i> 마이 픽</a>
+            <a href="#"><i class="fas fa-user"></i> 마이 아티스트</a>
+            </div>
+        </div>
+        
+        <!-- 오른쪽 프로필 사이드바 -->
+        <div id="profileSidebar" class="profile-sidebar">
+            <div class="profile-header">
+            <span style="font-weight:bold;font-size:1.1rem;">Profile</span>
+            <i class="fas fa-times" onclick="toggleProfileSidebar()"></i>
+            </div>
+            <div class="profile-content">
+            <p>사용자명: {{ user.username }}</p>
+            <p>이메일: {{ user.email }}</p>
+            <a href="/" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <button style="margin-top:20px;">로그아웃</button>
+            </a>
+            <!-- 숨겨진 로그아웃 폼 -->
+            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                {% csrf_token %}
+            </form>
+            </div>
+        </div>
+
+        <!-- 곡 정보 영역 -->
+
+        {% block content %}
+        <div class="song-info-container">
+            {% if song %}
+            <div class="album-cover">
+                <!-- 앨범 이미지 -->
+                <img src="{{ song.cover_url }}" alt="Album Cover">
+            </div>
+            <div class="song-details">
+                <div class="song-title-container">
+                    <h2 class="song-title">{{ song.title }}</h2>
+                    <i class="fas fa-ellipsis-v menu-btn" onclick="togglePopupMenu(event)"></i>
+                    <!-- 팝업 메뉴 -->
+                    <div id="popupMenu" class="popup-menu">
+                        <a href="#">보관함에 추가</a>
+                        <a href="#">플레이리스트에 추가</a>
+                        <a href="#">바로 다음에 재생</a>
+                        <a href="#">맨 나중에 재생</a>
+                        <a href="#">즐겨찾기</a>
+                        <a href="#">정보 가져오기</a>
+                    </div>
+                </div>
+                <p class="song-album">{{ song.album.name }}</p>
+                <p class="song-artist">{{ song.artist }}</p>
+                <!-- 즐겨찾기 추가 -->
+                <i class="far fa-star favorite" onclick="toggleFavorite()"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 노래 가사 영역 -->
+        {% if song.lyrics %}
+            <div class="song-lyrics">
+                <p>{{ song.lyrics }}</p>
+            </div>        
+        {% else %}
+            <p>🔗 <a href="https://genius.com/search?q={{ song.title }} {{ song.artist }}" target="_blank">가사 보기 (Genius)</a></p>
+        {% endif %}
+
+        {% endblock %}
+
+
+        <!-- 하단 재생 바 유지 -->
+        <div class="now-playing">
+            <div class="song-info">
+                <span class="song-title">Now Playing: 노래 제목</span>
+                <span class="song-artist">아티스트 이름</span>
+            </div>
+            <div class="player-controls">
+                <i class="fas fa-backward"></i>
+                <i class="fas fa-play-circle"></i>
+                <i class="fas fa-forward"></i>
+            </div>
+        </div>
+
+        <script>
+            // 오른쪽 메뉴 사이드바 토글
+            function toggleMenuSidebar() {
+            const sidebar = document.getElementById('menuSidebar');
+            sidebar.classList.toggle('active');
+            }
+
+            // 오른쪽 프로필 사이드바 토글
+            function toggleProfileSidebar() {
+            const profileSidebar = document.getElementById('profileSidebar');
+            profileSidebar.classList.toggle('active');
+            }
+
+            // 주변 음악 검색
+            function startMusicDetection() {
+                alert("주변 음악을 마이크로 감지합니다... (예시)");
+                // 실제 음성인식/주변 소리 분석 로직 추가 가능
+            }
+            function showOptions(songName) {
+                alert(`${songName}의 옵션을 표시합니다.`);
+                // 여기에서 플레이리스트 추가, 재생 목록 담기 등의 기능 구현
+            }
+
+            function toggleFavorite() {
+                const star = document.querySelector('.favorite');
+                if (star.classList.contains('fas')) {
+                    star.classList.replace('fas', 'far');
+                    alert('즐겨찾기에서 제거되었습니다.');
+                } else {
+                    star.classList.replace('far', 'fas');
+                    alert('즐겨찾기에 추가되었습니다.');
+                }
+            }
+
+            function togglePopupMenu(event) {
+                const popupMenu = document.getElementById('popupMenu');
+                const button = event.target; // "..." 버튼
+                const rect = button.getBoundingClientRect(); // "..." 버튼의 위치 가져오기
+
+                if (popupMenu.style.display === 'block') {
+                    popupMenu.style.display = 'none'; // 팝업 숨기기
+                } else {
+                    // 팝업 메뉴를 "..." 버튼 오른쪽에 위치하도록 설정
+                    popupMenu.style.top = `${rect.top + window.scrollY}px`; // 버튼의 위쪽 맞춤
+                    popupMenu.style.left = `${rect.right + 10 + window.scrollX}px`; // 버튼 오른쪽에 간격 추가
+                    popupMenu.style.display = 'block'; // 팝업 메뉴 표시
+                }
+            }
+
+            // 페이지 외부 클릭 시 팝업 메뉴 닫기
+            document.addEventListener('click', function (event) {
+                const popupMenu = document.getElementById('popupMenu');
+                const isClickInside = popupMenu.contains(event.target); // 팝업 내부 클릭 여부
+                const isButtonClick = event.target.classList.contains('menu-btn'); // "..." 버튼 클릭 여부
+
+                if (!isClickInside && !isButtonClick) {
+                    popupMenu.style.display = 'none'; // 외부 클릭 시 팝업 닫기
+                }
+            });
+
+        </script>
+    </body>
+</html>
