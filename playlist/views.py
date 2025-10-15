@@ -160,7 +160,6 @@ def get_playlist_tracks(request, playlist_id):
             album_data = track["album"]
             album_spotify_id = album_data["id"]
 
-            # ✅ 앨범이 이미 있는지 확인하고 없으면 생성
             album, created = Album.objects.get_or_create(
                 spotify_id=album_spotify_id,
                 defaults={
@@ -173,7 +172,6 @@ def get_playlist_tracks(request, playlist_id):
             if created:
                 print(f"✅ 새 앨범 생성: {album.name}", flush=True)
 
-            # ✅ 트랙 저장 (album을 강제로 업데이트)
             Track.objects.update_or_create(
                 spotify_id=track["id"],
                 playlist=playlist,
@@ -181,11 +179,10 @@ def get_playlist_tracks(request, playlist_id):
                     "name": track["name"],
                     "artist": track["artists"][0]["name"],
                     "image_url": track["album"]["images"][0]["url"] if track["album"]["images"] else None,
-                    "album": album  # ✅ 앨범 연결
+                    "album": album  
                 }
             )
 
-    # ✅ 이미 저장된 데이터 중 album이 없는 트랙 처리
     tracks_without_album = Track.objects.filter(playlist=playlist, album__isnull=True)
     for track in tracks_without_album:
         track_data = sp.track(track.spotify_id)
