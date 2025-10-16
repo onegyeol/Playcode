@@ -23,7 +23,7 @@ Playcode는 Spotify API와 Genius API를 연동하여 음악을 추천하고, �
 
 
 ## 💻 기술 스택
-- Backend: Python, Django, FastAPI
+- Backend: Python, Django
 - Frontend: HTML, CSS, Django Template
 - Database: MySQL (Docker로 컨테이너 관리)
 - API: Spotify API, Genius API
